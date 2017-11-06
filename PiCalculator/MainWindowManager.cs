@@ -12,7 +12,7 @@ namespace PiCalculator
 {
     class MainWindowManager : ViewModelBase
     {
-        public int CountOfIterations { get; set; } = 100000;
+        public int CountOfIterations { get; set; } = 1000000;
         private string _linearValue;
         public string LinearValue { get { return _linearValue; }
             set
@@ -72,26 +72,35 @@ namespace PiCalculator
             double sum = 0;
             Stopwatch sw = new Stopwatch();
             sw.Start();
+            double step = 1.0 / CountOfIterations;
             for (int i = 0; i < CountOfIterations; i++)
             {
-                sum += Math.Pow(-1, i) / (2 * i + 1);
+                var x = (i + 0.5) * step;
+                sum += 4 / (1 + x * x);
             }
+            sum *= step;
             sw.Stop();
-            LinearValue = (4*sum).ToString();
-            LinearTime = sw.Elapsed.TotalSeconds.ToString();
+            LinearValue = $"{sum}";
+            LinearTime = $"{sw.Elapsed.TotalSeconds}";
             RaisePropertyChanged("LinearValue");
             RaisePropertyChanged("LinearTime");
         }
 
         private void ParallelIntegral()
         {
-            Stopwatch sw = new Stopwatch();
+            var sum = new double[] {0};
+            var sw = new Stopwatch();
             sw.Start();
-            double s = 0;
-            Parallel.For(0, CountOfIterations, (i) => s += Math.Pow(-1, i) / (2 * i + 1));
-            
+            var step = 1.0 / CountOfIterations;
+            Parallel.For(0, CountOfIterations, i =>
+            {
+                var x = (i + 0.5) * step;
+                lock (sum)
+                    sum[0] += 4.0 / (1 + x * x);
+            });
+            sum[0] *= step;
             sw.Stop();
-            ParallelValue = (4*s).ToString();
+            ParallelValue = sum[0].ToString();
             ParallelTime = sw.Elapsed.TotalSeconds.ToString();
             RaisePropertyChanged("ParallelValue");
             RaisePropertyChanged("ParallelTime");

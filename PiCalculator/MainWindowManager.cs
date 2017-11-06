@@ -8,12 +8,11 @@ using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 
-namespace BilligRunTheWorld
+namespace PiCalculator
 {
-    class MainWindowManager:ViewModelBase
+    class MainWindowManager : ViewModelBase
     {
-        const int COUNT = 100000;
-        static int counter = 0;
+        public int CountOfIterations { get; set; } = 100000;
         private string _linearValue;
         public string LinearValue { get { return _linearValue; }
             set
@@ -28,6 +27,7 @@ namespace BilligRunTheWorld
         public RelayCommand LinearIntegralCommand { get; private set; }
         public RelayCommand LinearMonteCarloCommand { get; private set; }
         public RelayCommand ParallelIntegralCommand { get; private set; }
+        public RelayCommand ParallelMonteCarloCommand { get; private set; }
 
         public MainWindowManager()
         {
@@ -36,6 +36,7 @@ namespace BilligRunTheWorld
             LinearMonteCarloCommand = new RelayCommand(LinearMonteCarlo);
             ParallelArcsinCommand = new RelayCommand(ParallelArcsin);
             ParallelIntegralCommand = new RelayCommand(ParallelIntegral);
+            ParallelMonteCarloCommand = new RelayCommand(ParallelMonteCarlo);
         }
 
         
@@ -44,7 +45,7 @@ namespace BilligRunTheWorld
             var x = 0.5;
             Stopwatch sw = new Stopwatch();
             sw.Start();
-            for (int i = 0; i < COUNT; i++)
+            for (int i = 0; i < CountOfIterations; i++)
             {
                 LinearValue = (2 * (Math.Asin(Math.Sqrt(1 - Math.Pow(x, 2))) + Math.Abs(Math.Asin(x)))).ToString();
             }
@@ -55,16 +56,23 @@ namespace BilligRunTheWorld
 
         private void ParallelArcsin()
         {
-            
+            var x = 0.5;
+            Stopwatch sw = new Stopwatch();
+            sw.Start();            
+            Parallel.For(0, CountOfIterations, (i) => ParallelValue = (2 * (Math.Asin(Math.Sqrt(1 - Math.Pow(x, 2))) + Math.Abs(Math.Asin(x)))).ToString());
+            sw.Stop();
+            ParallelTime = sw.Elapsed.TotalSeconds.ToString();
+            RaisePropertyChanged("ParallelValue");
+            RaisePropertyChanged("ParallelTime");
+
         }
 
         private void LinearIntegral()
         {
             double sum = 0;
-            int N = 10000000;
             Stopwatch sw = new Stopwatch();
             sw.Start();
-            for (int i = 0; i < N; i++)
+            for (int i = 0; i < CountOfIterations; i++)
             {
                 sum += Math.Pow(-1, i) / (2 * i + 1);
             }
@@ -77,28 +85,26 @@ namespace BilligRunTheWorld
 
         private void ParallelIntegral()
         {
-            int N = 10000000;
-            double[] array = new double[N];
             Stopwatch sw = new Stopwatch();
             sw.Start();
             double s = 0;
-            Parallel.For(0, N, (i) => s += Math.Pow(-1, i) / (2 * i + 1));
+            Parallel.For(0, CountOfIterations, (i) => s += Math.Pow(-1, i) / (2 * i + 1));
+            
             sw.Stop();
-            LinearValue = (4*s).ToString();
-            LinearTime = sw.Elapsed.TotalSeconds.ToString();
-            RaisePropertyChanged("LinearValue");
-            RaisePropertyChanged("LinearTime");
+            ParallelValue = (4*s).ToString();
+            ParallelTime = sw.Elapsed.TotalSeconds.ToString();
+            RaisePropertyChanged("ParallelValue");
+            RaisePropertyChanged("ParallelTime");
         }
        
         private void LinearMonteCarlo()
         {
-            int N = 10000000;
             double a = 1000;
             Random rnd = new Random();
             int counter = 0;
             Stopwatch sw = new Stopwatch();
             sw.Start();
-            for (int i = 0; i < N; i++)
+            for (int i = 0; i < CountOfIterations; i++)
             {
                 var x = rnd.Next(-500, 500);
                 var y = rnd.Next(-500, 500);
@@ -106,12 +112,34 @@ namespace BilligRunTheWorld
                     counter++;
             }
             sw.Stop();
-            LinearValue = (4 * counter / (double)N).ToString();
+            LinearValue = (4 * counter / (double)CountOfIterations).ToString();
             LinearTime = sw.Elapsed.TotalSeconds.ToString();
             RaisePropertyChanged("LinearValue");
             RaisePropertyChanged("LinearTime");
 
         }
+        private void ParallelMonteCarlo()
+        {
+            Random rnd = new Random(DateTime.Now.Millisecond);
+            int counter = 0;
+            Stopwatch sw = new Stopwatch();
+            sw.Start();            
+            Parallel.For(0, CountOfIterations, (i) =>
+            {
+                var x = rnd.NextDouble();
+                var y = rnd.NextDouble();
+                if (y * y <= Circle(x, 0.5))
+                    counter++;
+            });
+            sw.Stop();
+            ParallelValue = (4 * counter / (double)CountOfIterations).ToString();
+            ParallelTime = sw.Elapsed.TotalSeconds.ToString();
+            RaisePropertyChanged("ParallelValue");
+            RaisePropertyChanged("ParallelTime");
+
+        }
+
+
 
         private double Circle(double x,double radius)
         {

@@ -6,7 +6,7 @@ using System.Linq;
 using System.Threading.Tasks;
 using System.Windows;
 
-namespace BilligRunTheWorld
+namespace PiCalculator
 {
     /// <summary>
     /// Interaction logic for App.xaml

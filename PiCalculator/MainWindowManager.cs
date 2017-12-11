@@ -12,7 +12,8 @@ namespace PiCalculator
 {
     class MainWindowManager : ViewModelBase
     {
-        public int CountOfIterations { get; set; } = 1000000;
+        public int CountOfIterations { get; set; } = 10000000;
+        public int CountOfThreads { get; set; } = 4;
         private string _linearValue;
         public string LinearValue { get { return _linearValue; }
             set
@@ -29,6 +30,7 @@ namespace PiCalculator
         public RelayCommand ParallelIntegralCommand { get; private set; }
         public RelayCommand ParallelMonteCarloCommand { get; private set; }
 
+
         public MainWindowManager()
         {
             LinearArcsinCommand = new RelayCommand(LinearArcsin);
@@ -42,13 +44,10 @@ namespace PiCalculator
         
         private void LinearArcsin()
         {
-            var x = 0.5;
+            LinearAlgorithms.N = CountOfIterations;
             Stopwatch sw = new Stopwatch();
-            sw.Start();
-            for (int i = 0; i < CountOfIterations; i++)
-            {
-                LinearValue = (2 * (Math.Asin(Math.Sqrt(1 - Math.Pow(x, 2))) + Math.Abs(Math.Asin(x)))).ToString();
-            }
+            sw.Start();            
+            LinearValue = LinearAlgorithms.GetArcSin().ToString();          
             sw.Stop();
             LinearTime = sw.Elapsed.TotalSeconds.ToString();
             RaisePropertyChanged("LinearTime");
@@ -56,11 +55,12 @@ namespace PiCalculator
 
         private void ParallelArcsin()
         {
-            var x = 0.5;
+            ParallelAlgorithms.CountOfThreads = CountOfThreads;
+            ParallelAlgorithms.N = CountOfIterations;
             Stopwatch sw = new Stopwatch();
-            sw.Start();            
-            Parallel.For(0, CountOfIterations, (i) => ParallelValue = (2 * (Math.Asin(Math.Sqrt(1 - Math.Pow(x, 2))) + Math.Abs(Math.Asin(x)))).ToString());
-            sw.Stop();
+            sw.Start();
+            ParallelValue = ParallelAlgorithms.GetPI(ParallelAlgorithms.ASinMethod).ToString();
+            sw.Stop();            
             ParallelTime = sw.Elapsed.TotalSeconds.ToString();
             RaisePropertyChanged("ParallelValue");
             RaisePropertyChanged("ParallelTime");
@@ -69,18 +69,11 @@ namespace PiCalculator
 
         private void LinearIntegral()
         {
-            double sum = 0;
+            LinearAlgorithms.N = CountOfIterations;
             Stopwatch sw = new Stopwatch();
             sw.Start();
-            double step = 1.0 / CountOfIterations;
-            for (int i = 0; i < CountOfIterations; i++)
-            {
-                var x = (i + 0.5) * step;
-                sum += 4 / (1 + x * x);
-            }
-            sum *= step;
-            sw.Stop();
-            LinearValue = $"{sum}";
+            LinearValue = $"{LinearAlgorithms.GetIntegral()}";
+            sw.Stop();            
             LinearTime = $"{sw.Elapsed.TotalSeconds}";
             RaisePropertyChanged("LinearValue");
             RaisePropertyChanged("LinearTime");
@@ -88,19 +81,12 @@ namespace PiCalculator
 
         private void ParallelIntegral()
         {
-            var sum = new double[] {0};
+            ParallelAlgorithms.CountOfThreads = CountOfThreads;
+            ParallelAlgorithms.N = CountOfIterations;
             var sw = new Stopwatch();
             sw.Start();
-            var step = 1.0 / CountOfIterations;
-            Parallel.For(0, CountOfIterations, i =>
-            {
-                var x = (i + 0.5) * step;
-                lock (sum)
-                    sum[0] += 4.0 / (1 + x * x);
-            });
-            sum[0] *= step;
+            ParallelValue = ParallelAlgorithms.GetPI(ParallelAlgorithms.IntegralMethod).ToString(); ;
             sw.Stop();
-            ParallelValue = sum[0].ToString();
             ParallelTime = sw.Elapsed.TotalSeconds.ToString();
             RaisePropertyChanged("ParallelValue");
             RaisePropertyChanged("ParallelTime");
@@ -108,20 +94,11 @@ namespace PiCalculator
        
         private void LinearMonteCarlo()
         {
-            double a = 1000;
-            Random rnd = new Random();
-            int counter = 0;
+            LinearAlgorithms.N = CountOfIterations;
             Stopwatch sw = new Stopwatch();
             sw.Start();
-            for (int i = 0; i < CountOfIterations; i++)
-            {
-                var x = rnd.Next(-500, 500);
-                var y = rnd.Next(-500, 500);
-                if (y * y <= Circle(x, a/2))
-                    counter++;
-            }
+            LinearValue = $"{LinearAlgorithms.GetMonteCarlo()}";
             sw.Stop();
-            LinearValue = (4 * counter / (double)CountOfIterations).ToString();
             LinearTime = sw.Elapsed.TotalSeconds.ToString();
             RaisePropertyChanged("LinearValue");
             RaisePropertyChanged("LinearTime");
@@ -129,19 +106,12 @@ namespace PiCalculator
         }
         private void ParallelMonteCarlo()
         {
-            Random rnd = new Random(DateTime.Now.Millisecond);
-            int counter = 0;
+            ParallelAlgorithms.CountOfThreads = CountOfThreads;
+            ParallelAlgorithms.N = CountOfIterations;
             Stopwatch sw = new Stopwatch();
             sw.Start();            
-            Parallel.For(0, CountOfIterations, (i) =>
-            {
-                var x = rnd.NextDouble();
-                var y = rnd.NextDouble();
-                if (y * y <= Circle(x, 0.5))
-                    counter++;
-            });
-            sw.Stop();
-            ParallelValue = (4 * counter / (double)CountOfIterations).ToString();
+            ParallelValue = ParallelAlgorithms.GetPI(ParallelAlgorithms.MonteCarloMethod).ToString();
+            sw.Stop();           
             ParallelTime = sw.Elapsed.TotalSeconds.ToString();
             RaisePropertyChanged("ParallelValue");
             RaisePropertyChanged("ParallelTime");
@@ -153,6 +123,11 @@ namespace PiCalculator
         private double Circle(double x,double radius)
         {
             return radius * radius - x * x;
+        }
+
+        private void SetResult(double result)
+        {
+            ParallelValue = result.ToString();
         }
     }
 }

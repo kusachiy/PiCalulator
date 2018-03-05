@@ -31,6 +31,8 @@ namespace PiCalculator
                 threads[k].Join();
             if(_calcMethod==ASinMethod)
                 return _values.Average();
+            if (_calcMethod == LeibnizMethod)
+                return _values.Sum()*4;
             if (_calcMethod == IntegralMethod)
                 return _values.Sum();
             if (_calcMethod == MonteCarloMethod)
@@ -53,6 +55,16 @@ namespace PiCalculator
             for (int i = start; i < finish; i++)
             {
                 res= 2 * (Math.Asin(Math.Sqrt(1 - Math.Pow(x, 2))) + Math.Abs(Math.Asin(x)));
+            }
+            return res;
+        }
+        public static double LeibnizMethod(int start, int finish)
+        {
+            double res = 0;
+            for (int i = start; i < finish; i++)
+            {
+                var sign = i % 2 == 0 ? 1 : -1;
+                res += (double)sign / (2 * i + 1);                
             }
             return res;
         }

@@ -23,13 +23,17 @@
         </Grid.RowDefinitions>
         <Grid>
             <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="3*"></ColumnDefinition>
                 <ColumnDefinition Width="2*"></ColumnDefinition>
-                <ColumnDefinition></ColumnDefinition>
-            </Grid.ColumnDefinitions>            
-            <GroupBox Header="Count_Of_Iterations">
-                <TextBox FontSize="20" Text="{Binding CountOfIterations}" />
+                <ColumnDefinition Width="2*"></ColumnDefinition>
+            </Grid.ColumnDefinitions>
+            <GroupBox Header="Exact value of PI">
+                <TextBox FontSize="20" Text="{Binding ExactValue}" IsEnabled="False"/>
             </GroupBox>
-            <GroupBox Header="Threads" Grid.Column="1">
+            <GroupBox Header="Count_Of_Iterations" Grid.Column="1">
+                <TextBox FontSize="20" Text="{Binding CountOfIterations}" />
+            </GroupBox>           
+            <GroupBox Header="Threads" Grid.Column="2">
                 <TextBox FontSize="20" Text="{Binding CountOfThreads}" />
             </GroupBox>
         </Grid>
@@ -60,7 +64,7 @@
                         Margin="0,5"
                         BorderThickness="2"
                         Command="{Binding LinearArcsinCommand}"
-                        Content="Arsin" />
+                        Content="Leibniz" />
                     <Button
                         Width="120"
                         Height="40"
@@ -113,7 +117,7 @@
                         Margin="0,5"
                         BorderThickness="2"
                         Command="{Binding ParallelArcsinCommand}"
-                        Content="Arsin" />
+                        Content="Leibniz" />
                     <Button
                         Width="120"
                         Height="40"

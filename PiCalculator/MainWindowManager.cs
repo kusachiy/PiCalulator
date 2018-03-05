@@ -13,7 +13,7 @@ namespace PiCalculator
     class MainWindowManager : ViewModelBase
     {
         public int CountOfIterations { get; set; } = 10000000;
-        public int CountOfThreads { get; set; } = 4;
+        public int CountOfThreads { get; set; } = Environment.ProcessorCount;
         private string _linearValue;
         public string LinearValue { get { return _linearValue; }
             set
@@ -23,6 +23,7 @@ namespace PiCalculator
         public string LinearTime { get; set; }
         public string ParallelValue { get; set; }
         public string ParallelTime { get; set; }
+        public string ExactValue { get; set; } = Math.PI.ToString();
         public RelayCommand LinearArcsinCommand { get; private set; }
         public RelayCommand ParallelArcsinCommand { get; private set; }
         public RelayCommand LinearIntegralCommand { get; private set; }
@@ -47,7 +48,7 @@ namespace PiCalculator
             LinearAlgorithms.N = CountOfIterations;
             Stopwatch sw = new Stopwatch();
             sw.Start();            
-            LinearValue = LinearAlgorithms.GetArcSin().ToString();          
+            LinearValue = LinearAlgorithms.GetLeibniz().ToString();          
             sw.Stop();
             LinearTime = sw.Elapsed.TotalSeconds.ToString();
             RaisePropertyChanged("LinearTime");
@@ -59,7 +60,7 @@ namespace PiCalculator
             ParallelAlgorithms.N = CountOfIterations;
             Stopwatch sw = new Stopwatch();
             sw.Start();
-            ParallelValue = ParallelAlgorithms.GetPI(ParallelAlgorithms.ASinMethod).ToString();
+            ParallelValue = ParallelAlgorithms.GetPI(ParallelAlgorithms.LeibnizMethod).ToString();
             sw.Stop();            
             ParallelTime = sw.Elapsed.TotalSeconds.ToString();
             RaisePropertyChanged("ParallelValue");

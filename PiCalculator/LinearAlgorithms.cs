@@ -9,16 +9,18 @@ namespace PiCalculator
     static class LinearAlgorithms
     {
         public static int N { get; set; }
+        public static double EPS { get; set; } = 0.0001;
 
-        public static double GetArcSin()
+        public static double GetLeibniz()
         {
-            var x = 0.5;
-            double[] res = new double[N];
+            
+            double x = 0;
             for (int i = 0; i < N; i++)
             {
-                res[i] = 2 * (Math.Asin(Math.Sqrt(1 - Math.Pow(x, 2))) + Math.Abs(Math.Asin(x)));
+                var sign = i % 2 == 0 ? 1 : -1;
+                x += (double)sign / (2 * i + 1);
             }
-            return res.Average();
+            return x*4;
         }
 
         public static double GetIntegral()
